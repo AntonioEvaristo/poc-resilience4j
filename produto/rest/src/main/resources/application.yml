@@ -1,0 +1,18 @@
+server:
+  port: 8080
+  servlet:
+    contextPath: /produto
+  untertow:
+    threads:
+      io: 5
+      worker: 5
+    accesslog:
+      enabled: true
+      pattern: "%t %a %r %s (%D ms)"
+      dir: C:/temp/logs
+    options:
+      server:
+        record-request-start-time: true
+spring:
+  application:
+    name: poc-spring-resilience4j
