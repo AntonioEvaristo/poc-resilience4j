@@ -187,4 +187,40 @@ public class ProdutoServiceTest {
         expectedException.expectMessage("Produto já existe, verifique o codigo do produto!!");
         produtoService.cadastrarProduto(produto);
     }
+
+    @Test
+    public void atualizarProdutoComSucesso() throws ProdutoException {
+        Long id = 1L;
+        Produto prd = Produto.builder()
+                .id(id)
+                .codigo("100")
+                .nome("Garrafa")
+                .valor(BigDecimal.ONE)
+                .quantidade(50)
+                .isDisponivel(Boolean.TRUE)
+                .categoria(Categoria.builder()
+                        .codigo("1")
+                        .nome("utensilios")
+                        .build())
+                .build();
+        Mockito.when(produtoRepository.findById(id)).thenReturn(Optional.of(produto));
+        Mockito.when(produtoRepository.update(prd)).thenReturn(prd);
+        Produto produtoAtualizado = produtoService.atualizaProduto(prd, id);
+        Mockito.verify(produtoRepository, Mockito.times(1)).update(prd);
+        Mockito.verify(produtoRepository, Mockito.times(1)).findById(id);
+        Assert.assertNotNull(produtoAtualizado);
+        Assert.assertEquals(prd.getQuantidade(), produtoAtualizado.getQuantidade());
+        Assert.assertEquals(prd.getValor(), produtoAtualizado.getValor());
+        Assert.assertEquals(id, produtoAtualizado.getId());
+    }
+
+    @Test
+    public void atualizarProdutoException() throws ProdutoException {
+        Long id = 1L;
+        Mockito.when(produtoRepository.findById(produto.getId())).thenReturn(Optional.empty());
+        expectedException.expect(ProdutoException.class);
+        expectedException.expectMessage("Produto não existe, verifique o codigo/id do produto!!");
+        produtoService.atualizaProduto(produto, id);
+
+    }
 }
