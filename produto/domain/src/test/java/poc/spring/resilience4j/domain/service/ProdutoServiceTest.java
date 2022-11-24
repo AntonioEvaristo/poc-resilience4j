@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import poc.spring.resilience4j.domain.exception.ProdutoException;
 import poc.spring.resilience4j.domain.model.Categoria;
 import poc.spring.resilience4j.domain.model.Produto;
@@ -30,6 +32,9 @@ public class ProdutoServiceTest {
 
     private Produto produto;
     private List<Produto> produtos;
+
+    private Page<Produto> produtosPage;
+
 
     @Before
     public void setUp() throws Exception {
@@ -107,6 +112,7 @@ public class ProdutoServiceTest {
                                 .nome("Gamer")
                                 .build())
                         .build());
+        produtosPage = new PageImpl<>(produtos);
     }
 
     @Test
@@ -125,49 +131,6 @@ public class ProdutoServiceTest {
         expectedException.expect(ProdutoException.class);
         expectedException.expectMessage("Produto não localizado, verifique o codigo do produto!");
         produtoService.buscarProduto("");
-    }
-
-    @Test
-    public void listarProdutosDisponiveisComSucessoSemNomeCategoria() {
-        Mockito.when(produtoRepository.findAll()).thenReturn(produtos);
-        List<Produto> listaProdutos = produtoService.listarProduto(Boolean.TRUE, "");
-        Assert.assertFalse(listaProdutos.isEmpty());
-        Assert.assertEquals(3, listaProdutos.size());
-        Assert.assertEquals("124", listaProdutos.get(0).getCodigo());
-        Assert.assertEquals("99", listaProdutos.get(1).getCodigo());
-        Assert.assertEquals("7", listaProdutos.get(2).getCodigo());
-    }
-
-    @Test
-    public void listarProdutosIndisponiveisComSucessoSemNomeCategoria() {
-        Mockito.when(produtoRepository.findAll()).thenReturn(produtos);
-        List<Produto> listaProdutos = produtoService.listarProduto(Boolean.FALSE,"");
-        Assert.assertFalse(listaProdutos.isEmpty());
-        Assert.assertEquals(2, listaProdutos.size());
-        Assert.assertEquals("123", listaProdutos.get(0).getCodigo());
-        Assert.assertEquals("333", listaProdutos.get(1).getCodigo());
-    }
-
-    @Test
-    public void listarProdutosDisponiveisComSucessoComNomeCategoria() {
-        String categoria = "utensilios";
-        Mockito.when(produtoRepository.findAll()).thenReturn(produtos);
-        List<Produto> listaProdutos = produtoService.listarProduto(Boolean.TRUE, categoria);
-        Assert.assertFalse(listaProdutos.isEmpty());
-        Assert.assertEquals(1, listaProdutos.size());
-        Assert.assertEquals("99", listaProdutos.get(0).getCodigo());
-        Assert.assertEquals(categoria, listaProdutos.get(0).getCategoria().getNome());
-    }
-
-    @Test
-    public void listarProdutosIndisponiveisComSucessoComNomeCategoria() {
-        String categoria = "Gamer";
-        Mockito.when(produtoRepository.findAll()).thenReturn(produtos);
-        List<Produto> listaProdutos = produtoService.listarProduto(Boolean.FALSE,categoria);
-        Assert.assertFalse(listaProdutos.isEmpty());
-        Assert.assertEquals(1, listaProdutos.size());
-        Assert.assertEquals("123", listaProdutos.get(0).getCodigo());
-        Assert.assertEquals(categoria, listaProdutos.get(0).getCategoria().getNome());
     }
 
     @Test
@@ -204,9 +167,9 @@ public class ProdutoServiceTest {
                         .build())
                 .build();
         Mockito.when(produtoRepository.findById(id)).thenReturn(Optional.of(produto));
-        Mockito.when(produtoRepository.update(prd)).thenReturn(prd);
+        Mockito.when(produtoRepository.save(prd)).thenReturn(prd);
         Produto produtoAtualizado = produtoService.atualizaProduto(prd, id);
-        Mockito.verify(produtoRepository, Mockito.times(1)).update(prd);
+        Mockito.verify(produtoRepository, Mockito.times(1)).save(prd);
         Mockito.verify(produtoRepository, Mockito.times(1)).findById(id);
         Assert.assertNotNull(produtoAtualizado);
         Assert.assertEquals(prd.getQuantidade(), produtoAtualizado.getQuantidade());
@@ -221,6 +184,11 @@ public class ProdutoServiceTest {
         expectedException.expect(ProdutoException.class);
         expectedException.expectMessage("Produto não existe, verifique o codigo/id do produto!!");
         produtoService.atualizaProduto(produto, id);
+
+    }
+
+    @Test
+    public void filtraListaProdutosPorIsDisponivel(){
 
     }
 }

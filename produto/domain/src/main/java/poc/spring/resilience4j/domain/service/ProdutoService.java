@@ -3,15 +3,13 @@ package poc.spring.resilience4j.domain.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import poc.spring.resilience4j.domain.exception.ProdutoException;
 import poc.spring.resilience4j.domain.model.Produto;
 import poc.spring.resilience4j.domain.repository.IProdutoRepository;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -30,25 +28,18 @@ public final class ProdutoService implements IProdutoService{
     }
 
     @Override
-    public List<Produto> listarProduto(Boolean isDisponivel, String nomeCategoria) {
-        List<Produto> produtos = produtoRepository
-                .findAll()
-                .stream()
-                .filter(produto -> produto.getIsDisponivel().equals(isDisponivel))
-                .collect(Collectors.toList());
+    public Page<Produto> listarProduto(Boolean isDisponivel, String nomeCategoria, Pageable pageable) {
+        return filtraListaProdutos(isDisponivel, nomeCategoria, pageable);
+    }
 
-        if (StringUtils.isNotBlank(nomeCategoria)) {
-            produtos = produtos
-                    .stream()
-                    .filter(getProdutoNomeCategoria(nomeCategoria))
-                    .collect(Collectors.toList());
-            log.info("Filtrando lista por nomeCategoria {}", nomeCategoria);
+    private Page<Produto> filtraListaProdutos(Boolean isDisponivel, String nomeCategoria, Pageable pageable) {
+        if(StringUtils.isNotBlank(nomeCategoria)){
+            Page<Produto> produtosPorNomeCategoria = produtoRepository.findByIsDisponivelAndCategoriaEntityNome(isDisponivel, nomeCategoria, pageable);
+            log.info("Lista de produtos filtrada por nome da categoria {} ", produtosPorNomeCategoria);
+            return produtosPorNomeCategoria;
         }
-        produtos = produtos
-                .stream()
-                .sorted(Comparator.comparing(Produto::getValor))
-                .collect(Collectors.toList());
-        log.info("Lista de todos produtos {}", produtos);
+        Page<Produto> produtos = produtoRepository.findByIsDisponivel(isDisponivel, pageable);
+        log.info("Lista de produtos por flag de disponivel {}", produtos);
         return produtos;
     }
 
@@ -56,7 +47,7 @@ public final class ProdutoService implements IProdutoService{
     public Produto cadastrarProduto(Produto produto) throws ProdutoException {
         if(getProduto(produto.getCodigo()).isPresent()){
             log.error("Produto já existe com esse codigo! {}", produto);
-            throw  new ProdutoException("Produto já existe, verifique o codigo do produto!!");
+            throw new ProdutoException("Produto já existe, verifique o codigo do produto!!");
         }
         Produto produtoSave = produtoRepository.save(produto);
         log.info("Produto salvo {}", produtoSave);
@@ -71,18 +62,13 @@ public final class ProdutoService implements IProdutoService{
         });
         produto.setId(produtoEntity.getId());
         produto.getCategoria().setId(produtoEntity.getCategoria().getId());
-        Produto produtoSave = produtoRepository.update(produto);
-        log.info("Produto atualizado! {}", produtoSave);
-        return produtoSave;
+        Produto produtoUpdate = produtoRepository.save(produto);
+        log.info("Produto atualizado! {}", produtoUpdate);
+        return produtoUpdate;
     }
 
     private Optional<Produto> getProduto(String codigo) {
         return produtoRepository.findByCodigo(codigo);
     }
-
-    private static Predicate<Produto> getProdutoNomeCategoria(String nomeCategoria) {
-        return prd -> prd.getCategoria().getNome().equals(nomeCategoria);
-    }
-
 
 }
