@@ -1,6 +1,7 @@
 package poc.spring.resilience4j.integration.repository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import poc.spring.resilience4j.domain.model.Categoria;
 import poc.spring.resilience4j.domain.repository.ICategoriaRepository;
 import poc.spring.resilience4j.integration.mapper.CategoriaMapper;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Component
 public class CategoriaRepository implements ICategoriaRepository {
     private final ICategoriaEntityRepository categoriaEntityRepository;
     @Override

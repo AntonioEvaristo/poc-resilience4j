@@ -3,12 +3,14 @@ package poc.spring.resilience4j.integration.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Component;
 import poc.spring.resilience4j.domain.model.Produto;
 import poc.spring.resilience4j.domain.repository.IProdutoRepository;
 import poc.spring.resilience4j.integration.mapper.ProdutoMapper;
 
 import java.util.Optional;
 
+@Component
 @RequiredArgsConstructor
 public class ProdutoRepository implements IProdutoRepository {
     private final IProdutoEntityRepository produtoEntityRepository;
