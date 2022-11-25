@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import poc.spring.resilience4j.domain.exception.ProdutoException;
 import poc.spring.resilience4j.domain.model.Categoria;
 import poc.spring.resilience4j.domain.model.Produto;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProdutoServiceTest {
 
@@ -33,12 +35,13 @@ public class ProdutoServiceTest {
     private Produto produto;
     private List<Produto> produtos;
 
-    private Page<Produto> produtosPage;
+    private PageRequest page;
 
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        page = PageRequest.of(0, 20);
         produto = Produto.builder()
                 .id(1L)
                 .codigo("100")
@@ -103,7 +106,7 @@ public class ProdutoServiceTest {
                 Produto.builder()
                         .codigo("7")
                         .nome("MK10")
-                        .descricao("Mortal combate")
+                        .descricao("Mortal Kombate")
                         .valor(BigDecimal.TEN)
                         .quantidade(25)
                         .isDisponivel(Boolean.TRUE)
@@ -112,7 +115,6 @@ public class ProdutoServiceTest {
                                 .nome("Gamer")
                                 .build())
                         .build());
-        produtosPage = new PageImpl<>(produtos);
     }
 
     @Test
@@ -188,7 +190,45 @@ public class ProdutoServiceTest {
     }
 
     @Test
-    public void filtraListaProdutosPorIsDisponivel(){
+    public void listaProdutosDisponiveis() {
+        Page<Produto> produtosDisponiveis = new PageImpl<>(produtos.stream()
+                .filter(produto -> Boolean.TRUE.equals(produto.getIsDisponivel())).collect(Collectors.toList()));
+        Mockito.when(produtoRepository.findByIsDisponivel(Boolean.TRUE, page)).thenReturn(produtosDisponiveis);
+        Page<Produto> produtosPage = produtoService.listarProduto(Boolean.TRUE, "  ", page);
+        Assert.assertFalse(produtosPage.isEmpty());
+        Assert.assertEquals(Boolean.TRUE, produtosPage.iterator().next().getIsDisponivel());
+    }
 
+    @Test
+    public void listaProdutosNaoDisponiveis() {
+        Page<Produto> produtosDisponiveis = new PageImpl<>(produtos.stream()
+                .filter(produto -> Boolean.FALSE.equals(produto.getIsDisponivel())).collect(Collectors.toList()));
+        Mockito.when(produtoRepository.findByIsDisponivel(Boolean.FALSE, page)).thenReturn(produtosDisponiveis);
+        Page<Produto> produtosPage = produtoService.listarProduto(Boolean.FALSE, "  ", page);
+        Assert.assertFalse(produtosPage.isEmpty());
+        Assert.assertEquals(Boolean.FALSE, produtosPage.iterator().next().getIsDisponivel());
+    }
+
+    @Test
+    public void listaProdutosDisponivelPorCategoria(){
+        String nomeCategoria = "Gamer";
+        Page<Produto> produtosDisponiveisPorCategoria = new PageImpl<>(produtos.stream()
+                .filter(produto -> Boolean.TRUE.equals(produto.getIsDisponivel()) && nomeCategoria.equals(produto.getCategoria().getNome()))
+                .collect(Collectors.toList()));
+        Mockito.when(produtoRepository.findByIsDisponivelAndCategoriaEntityNome(Boolean.TRUE, nomeCategoria, page)).thenReturn(produtosDisponiveisPorCategoria);
+        Page<Produto> produtosPage = produtoService.listarProduto(Boolean.TRUE, nomeCategoria, page);
+        Assert.assertFalse(produtosPage.isEmpty());
+        Assert.assertEquals(nomeCategoria, produtosPage.iterator().next().getCategoria().getNome());
+    }
+    @Test
+    public void listaProdutosNaoDisponivelPorCategoria(){
+        String nomeCategoria = "Gamer";
+        Page<Produto> produtosDisponiveisPorCategoria = new PageImpl<>(produtos.stream()
+                .filter(produto -> Boolean.FALSE.equals(produto.getIsDisponivel()) && nomeCategoria.equals(produto.getCategoria().getNome()))
+                .collect(Collectors.toList()));
+        Mockito.when(produtoRepository.findByIsDisponivelAndCategoriaEntityNome(Boolean.FALSE, nomeCategoria, page)).thenReturn(produtosDisponiveisPorCategoria);
+        Page<Produto> produtosPage = produtoService.listarProduto(Boolean.FALSE, nomeCategoria, page);
+        Assert.assertFalse(produtosPage.isEmpty());
+        Assert.assertEquals(nomeCategoria, produtosPage.iterator().next().getCategoria().getNome());
     }
 }
