@@ -11,6 +11,7 @@ import poc.spring.resilience4j.domain.model.Produto;
 import poc.spring.resilience4j.domain.service.IProdutoService;
 
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/v1/rest/produto")
@@ -30,7 +31,7 @@ public class ProdutoController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<Produto> saveProduto(@RequestBody Produto produto) throws ProdutoException {
+    public ResponseEntity<Produto> saveProduto(@RequestBody @Valid Produto produto) throws ProdutoException {
         return new ResponseEntity<>(produtoService.cadastrarProduto(produto), HttpStatus.CREATED);
     }
     @PutMapping
