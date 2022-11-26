@@ -34,9 +34,9 @@ public class ProdutoController {
     public ResponseEntity<Produto> saveProduto(@RequestBody @Valid Produto produto) throws ProdutoException {
         return new ResponseEntity<>(produtoService.cadastrarProduto(produto), HttpStatus.CREATED);
     }
-    @PutMapping
+    @PutMapping("/{id}")
     @Transactional
-    public ResponseEntity<Produto> putProduto(@RequestBody Produto produto, @PathVariable Long id) throws ProdutoException {
+    public ResponseEntity<Produto> putProduto(@RequestBody @Valid Produto produto, @PathVariable Long id) throws ProdutoException {
         return new ResponseEntity<>(produtoService.atualizaProduto(produto,id), HttpStatus.OK);
     }
 }
