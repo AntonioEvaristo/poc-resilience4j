@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import poc.spring.resilience4j.domain.exception.ProdutoException;
+import poc.spring.resilience4j.domain.exception.ProdutoNotFoundException;
 import poc.spring.resilience4j.domain.model.Produto;
 import poc.spring.resilience4j.domain.repository.IProdutoRepository;
 
@@ -18,10 +19,10 @@ public final class ProdutoService implements IProdutoService{
     private final IProdutoRepository produtoRepository;
 
     @Override
-    public Produto buscarProduto(String codigo) throws ProdutoException {
+    public Produto buscarProduto(String codigo) throws ProdutoNotFoundException {
         Produto produto = getProduto(codigo).orElseThrow(() -> {
             log.error("Produto não localizado {}", codigo);
-            return new ProdutoException("Produto não localizado, verifique o codigo do produto!");
+            return new ProdutoNotFoundException("Produto não localizado, verifique o codigo do produto!");
         });
         log.info("Produto {}", produto);
         return produto;
@@ -55,10 +56,10 @@ public final class ProdutoService implements IProdutoService{
     }
 
     @Override
-    public Produto atualizaProduto(Produto produto, Long id) throws ProdutoException {
+    public Produto atualizaProduto(Produto produto, Long id) throws ProdutoNotFoundException {
         Produto produtoEntity = produtoRepository.findById(id).orElseThrow(() -> {
             log.error("Produto não existe! {}", produto);
-            return new ProdutoException("Produto não existe, verifique o codigo/id do produto!!");
+            return new ProdutoNotFoundException("Produto não existe, verifique o codigo/id do produto!!");
         });
         produto.setId(produtoEntity.getId());
         produto.getCategoria().setId(produtoEntity.getCategoria().getId());

@@ -4,13 +4,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import poc.spring.resilience4j.domain.exception.CategoriaException;
+import poc.spring.resilience4j.domain.exception.CategoriaNotFoundException;
 import poc.spring.resilience4j.domain.model.Categoria;
 import poc.spring.resilience4j.domain.repository.ICategoriaRepository;
 
@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public class CategoriaServiceTest {
 
@@ -58,7 +56,7 @@ public class CategoriaServiceTest {
         );
     }
     @Test
-    public void buscarCategoriaComSucesso() throws CategoriaException {
+    public void buscarCategoriaComSucesso() throws CategoriaNotFoundException {
         Mockito.when(categoriaRepository.findByCodigo(Mockito.anyString())).thenReturn(Optional.of(categoria));
         Categoria categoriaRetorno = categoriaService.buscarCategoria(categoria.getCodigo());
         Assert.assertNotNull(categoriaRetorno);
@@ -68,8 +66,8 @@ public class CategoriaServiceTest {
     }
 
     @Test
-    public void buscarCategoriaException() throws CategoriaException{
-        expectedException.expect(CategoriaException.class);
+    public void buscarCategoriaException() throws CategoriaNotFoundException{
+        expectedException.expect(CategoriaNotFoundException.class);
         expectedException.expectMessage("Categoria não localizada, verifique o codigo da categoria!");
         categoriaService.buscarCategoria("5");
     }

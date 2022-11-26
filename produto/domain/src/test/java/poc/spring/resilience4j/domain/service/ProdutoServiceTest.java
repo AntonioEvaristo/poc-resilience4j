@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import poc.spring.resilience4j.domain.exception.ProdutoException;
+import poc.spring.resilience4j.domain.exception.ProdutoNotFoundException;
 import poc.spring.resilience4j.domain.model.Categoria;
 import poc.spring.resilience4j.domain.model.Produto;
 import poc.spring.resilience4j.domain.repository.IProdutoRepository;
@@ -118,7 +119,7 @@ public class ProdutoServiceTest {
     }
 
     @Test
-    public void buscarProdutoDisponivelComSucesso() throws ProdutoException {
+    public void buscarProdutoDisponivelComSucesso() throws ProdutoNotFoundException {
         Mockito.when(produtoRepository.findByCodigo(Mockito.anyString())).thenReturn(Optional.of(produto));
         Produto produtoRetorno = produtoService.buscarProduto(produto.getCodigo());
         Assert.assertNotNull(produtoRetorno);
@@ -129,8 +130,8 @@ public class ProdutoServiceTest {
     }
 
     @Test
-    public void buscarProdutoException() throws ProdutoException {
-        expectedException.expect(ProdutoException.class);
+    public void buscarProdutoException() throws ProdutoNotFoundException {
+        expectedException.expect(ProdutoNotFoundException.class);
         expectedException.expectMessage("Produto não localizado, verifique o codigo do produto!");
         produtoService.buscarProduto("");
     }
@@ -154,7 +155,7 @@ public class ProdutoServiceTest {
     }
 
     @Test
-    public void atualizarProdutoComSucesso() throws ProdutoException {
+    public void atualizarProdutoComSucesso() throws ProdutoNotFoundException {
         Long id = 1L;
         Produto prd = Produto.builder()
                 .id(id)
@@ -180,10 +181,10 @@ public class ProdutoServiceTest {
     }
 
     @Test
-    public void atualizarProdutoException() throws ProdutoException {
+    public void atualizarProdutoException() throws ProdutoNotFoundException {
         Long id = 1L;
         Mockito.when(produtoRepository.findById(produto.getId())).thenReturn(Optional.empty());
-        expectedException.expect(ProdutoException.class);
+        expectedException.expect(ProdutoNotFoundException.class);
         expectedException.expectMessage("Produto não existe, verifique o codigo/id do produto!!");
         produtoService.atualizaProduto(produto, id);
 

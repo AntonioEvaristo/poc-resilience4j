@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import poc.spring.resilience4j.domain.exception.CategoriaException;
+import poc.spring.resilience4j.domain.exception.CategoriaNotFoundException;
 import poc.spring.resilience4j.domain.model.Categoria;
 import poc.spring.resilience4j.domain.service.ICategoriaService;
 
@@ -23,7 +24,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/{codigo}")
-    public ResponseEntity<Categoria> getCategoria(@PathVariable String codigo) throws CategoriaException {
+    public ResponseEntity<Categoria> getCategoria(@PathVariable String codigo) throws CategoriaNotFoundException {
         return new ResponseEntity<>(categoriaService.buscarCategoria(codigo), HttpStatus.OK);
     }
     @PostMapping
